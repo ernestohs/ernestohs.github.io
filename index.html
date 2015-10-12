@@ -230,7 +230,13 @@ body{
     margin-top:20px;
     box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
   }
-}/* Get the bourbon mixin from http://bourbon.io */
+}
+  .clock{
+    position: fixed !important;
+    bottom: 0 !important;
+    width: 100% !important;
+  }  
+/* Get the bourbon mixin from http://bourbon.io */
 /* Reset */
 .flip-clock-wrapper * {
     -webkit-box-sizing: border-box;
@@ -682,6 +688,13 @@ body{
 <div class="flip-counter clock"></div>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script type="text/javascript" src="http://flipclockjs.com/_themes/flipclockjs/js/flipclock/flipclock.js"></script>
-<script>$('.flip-counter').FlipClock();</script>
+  
+<script type="text/javascript" src="http://sugarjs.com/release/current/sugar.min.js"></script>
+  
+<script>
+  var clock = $('.flip-counter').FlipClock();
+  clock.setTime(Date.create().secondsUntil('31 October 2015'));
+  clock.setCountdown(true);
+  </script>
 </body>
 </html>
