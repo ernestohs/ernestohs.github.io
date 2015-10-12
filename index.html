@@ -1,196 +1,254 @@
-<html lang="en"><head>
-		<title></title>
-		<meta charset="utf-8">
-		<style type="text/css">
-
-			body {
-				background-color: #326696;
-				margin: 0px;
-				overflow: hidden;
-				font-family:Monospace;
-				font-size:13px;
-				text-align:center;
-				font-weight: bold;
-				text-align:center;
-			}
-
-			a {
-				color:#0078ff;
-			}
-
-		</style>
-		<script type="text/javascript" src="three.min.js"></script>
-		<script type="text/javascript" src="Detector.js"></script>
-
-		<script id="vs" type="x-shader/x-vertex">
-
-			varying vec2 vUv;
-
-			void main() {
-
-				vUv = uv;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-			}
-
-		</script>
-
-		<script id="fs" type="x-shader/x-fragment">
-
-			uniform sampler2D map;
-
-			uniform vec3 fogColor;
-			uniform float fogNear;
-			uniform float fogFar;
-
-			varying vec2 vUv;
-
-			void main() {
-
-				float depth = gl_FragCoord.z / gl_FragCoord.w;
-				float fogFactor = smoothstep( fogNear, fogFar, depth );
-
-				gl_FragColor = texture2D( map, vUv );
-				gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
-				gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
-
-			}
-
-		</script>
-
-		<script type="text/javascript">
-window.onload = function() {
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
-			var container;
-			var camera, scene, renderer;
-			var mesh, geometry, material;
-
-			var mouseX = 0, mouseY = 0;
-			var start_time = Date.now();
-
-			var windowHalfX = window.innerWidth / 2;
-			var windowHalfY = window.innerHeight / 2;
-
-			init();
-
-			function init() {
-
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
-
-				// Bg gradient
-
-				var canvas = document.createElement( 'canvas' );
-				canvas.width = 32;
-				canvas.height = window.innerHeight;
-
-				var context = canvas.getContext( '2d' );
-
-				var gradient = context.createLinearGradient( 0, 0, 0, canvas.height );
-				gradient.addColorStop(0, "#1e4877");
-				gradient.addColorStop(0.5, "#4584b4");
-
-				context.fillStyle = gradient;
-				context.fillRect(0, 0, canvas.width, canvas.height);
-
-				container.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
-				container.style.backgroundSize = '32px 100%';
-
-				//
-
-				camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 3000 );
-				camera.position.z = 6000;
-
-				scene = new THREE.Scene();
-
-				geometry = new THREE.Geometry();
-
-				var texture = THREE.ImageUtils.loadTexture( 'http://mrdoob.com/lab/javascript/webgl/clouds/cloud.png', null, animate );
-				texture.magFilter = THREE.LinearMipMapLinearFilter;
-				texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-				var fog = new THREE.Fog( 0x4584b4, - 100, 3000 );
-
-				material = new THREE.ShaderMaterial( {
-
-					uniforms: {
-
-						"map": { type: "t", value: texture },
-						"fogColor" : { type: "c", value: fog.color },
-						"fogNear" : { type: "f", value: fog.near },
-						"fogFar" : { type: "f", value: fog.far },
-
-					},
-					vertexShader: document.getElementById( 'vs' ).textContent,
-					fragmentShader: document.getElementById( 'fs' ).textContent,
-					depthWrite: false,
-					depthTest: false,
-					transparent: true
-
-				} );
-
-				var plane = new THREE.Mesh( new THREE.PlaneGeometry( 64, 64 ) );
-
-				for ( var i = 0; i < 8000; i++ ) {
-
-					plane.position.x = Math.random() * 1000 - 500;
-					plane.position.y = - Math.random() * Math.random() * 200 - 15;
-					plane.position.z = i;
-					plane.rotation.z = Math.random() * Math.PI;
-					plane.scale.x = plane.scale.y = Math.random() * Math.random() * 1.5 + 0.5;
-
-					THREE.GeometryUtils.merge( geometry, plane );
-
-				}
-
-				mesh = new THREE.Mesh( geometry, material );
-				scene.add( mesh );
-
-				mesh = new THREE.Mesh( geometry, material );
-				mesh.position.z = - 8000;
-				scene.add( mesh );
-
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				container.appendChild( renderer.domElement );
-
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				window.addEventListener( 'resize', onWindowResize, false );
-
-			}
-
-			function onDocumentMouseMove( event ) {
-
-				mouseX = ( event.clientX - windowHalfX ) * 0.25;
-				mouseY = ( event.clientY - windowHalfY ) * 0.15;
-
-			}
-
-			function onWindowResize( event ) {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			}
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-
-				position = ( ( Date.now() - start_time ) * 0.03 ) % 8000;
-
-				camera.position.x += ( mouseX - camera.position.x ) * 0.01;
-				camera.position.y += ( - mouseY - camera.position.y ) * 0.01;
-				camera.position.z = - position + 8000;
-
-				renderer.render( scene, camera );
-
-			}
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Bangers">
+<style>
+body{
+  background-color:rgba(165,10,255,0.1);
+  margin:50px;
 }
-		</script><div style="background: url(data:image/png;base64,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) ;"><canvas width="1858" height="1019" style="width: 1858px; height: 1019px;"></canvas></div>
-	
-
-</body></html>
+#head{
+  position:absolute;
+  height: 180px;
+  width:305px;
+  background-color:rgba(250,250,250,1);
+  border-radius: 8px/100px;
+  border-top-left-radius: 50%;
+  border-top-right-radius:50%;
+  border:4px solid rgba(145,5,255,0.1);
+  border-bottom: 0;
+  border-bottom-left-radius: 100px/10px;
+  border-bottom-right-radius:100px/10px;
+  box-shadow: 0px 50px 30px 30px rgba(1,1,1,0.4);
+  -webkit-animation: ghostly 3s infinite; 
+  -moz-animation: ghostly 3s infinite; 
+  -o-animation: ghostly 3s infinite;
+  animation:ghostly 4s infinite;
+  cursor:pointer;
+}
+#head:hover:after{
+  content:"boo!";
+  position:absolute;
+  font-family:Bangers;
+  line-height:100px;
+  color:rgba(5,5,5,0.9);
+  text-shadow: 5px 5px 3px rgba(2,2,2,0.2);
+  text-align:center;
+  font-size:50px;
+  right:-200px;
+  top:-10px;
+  border-radius:50%;
+  height:100px;
+  width:140px;
+  background-color:rgba(255,255,255,1);
+  border:4px solid rgba(250,250,250,1);
+  box-shadow: -1px 2px 3px rgba(2,2,2,0.2);
+}
+#head:hover:before{
+  content:"";
+  position:absolute;
+  width: 0;
+    height: 0;
+  right:-60px;
+  top:50px;
+    border-top: 10px solid transparent;
+    border-right: 20px solid rgba(255,255,255,1);
+    border-bottom: 10px solid transparent;
+    -webkit-transform:rotate(351deg); 
+  -ms-transform:rotate(351deg);
+  transform:rotate(351deg);
+  -webkit-filter: drop-shadow(-3px 2px 2px rgba(2,2,2,0.2));
+  z-index:10;
+}
+#eyes{
+  list-style:none;
+  margin: 0;
+  padding: 0;
+  padding-left:70px; 
+  margin-top:-20px;
+}
+#eyes li{
+    display: inline-block;
+  width: 90px;
+  height:87px;
+  background-color:rgba(250,250,250,1);
+  border-radius:50%;
+  box-shadow:1px 2px 3px rgba(2,2,2,0.2);
+}
+#eyes li:before{
+  content:"";
+  position:absolute;
+  height: 57px;
+  width:60px;
+  background-color: rgba(100,100,255,0.4);
+  box-shadow:0 0 10px rgba(1,1,1,0.1);
+  border-radius:50%;
+  margin:15px 0 0 15px;
+}
+#eyes li:after{
+  content:"";
+  position:absolute;
+  width:35px;
+  height:35px;
+  background-color:rgba(1,1,1,0.9);
+  border-radius:50%;
+  margin: 25px 0 0 27px;
+}
+#teeth{
+  position:absolute;
+  margin-top:-30px;
+  height:40px;
+  width:60px;
+  border-radius:50%/60%;
+  background-color:rgba(250,250,250,1);
+  box-shadow:0 5px 1px -3px rgba(255,200,200,0.0);
+}
+#openMouth{
+    position:absolute;
+  left:150px;
+  margin-top:0px;
+  border-radius:50%/30%;
+  border-bottom-left-radius: 20px;
+  height:30px;
+  width: 40px;
+  background-color:rgba(255,100,100,1);
+  overflow:hidden;
+  border:1px solid rgba(1,1,1,0.2);
+}
+#tongue{
+  position:absolute;
+  bottom:-15px;
+  border-radius:40%/30%;
+  height:30px;
+  width:30px;
+  background-color:rgba(255,200,200,1);
+}
+.gloss{
+    position:absolute;
+  height:70px;
+  width:25px;
+  top:90px;
+  left: 7px;
+  border-top-left-radius:15px;
+  border-top-right-radius:15px;
+  border-bottom-right-radius:15px;
+  border-bottom-left-radius:15px;
+  background-color:rgba(254,254,254,0.9);
+}
+#eyes #eyespace{
+  margin:0 10px 0 10px;
+  width: 0px;
+  height:0px;
+}
+#eyes #eyespace:before{
+   display:none;
+}
+#eyes #eyespace:after{
+    display:none;
+}
+#rip{
+  list-style:none;
+  padding:0;
+  padding-left:2px;
+  margin:0;
+  position:absolute;
+  bottom:-28px;
+}
+#rip li{
+  display:inline-block;
+  width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 19px solid transparent;
+    border-top: 25px solid rgba(250,250,250,1); 
+  -webkit-filter: drop-shadow(0 4px 2px rgba(191,180,200,1));
+  filter: drop-shadow(0 4px 2px rgba(191,180,200,1)); 
+}
+@-webkit-keyframes ghostly {
+  0%  { 
+    opacity: .3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+  50% { 
+    opacity: 1; 
+    margin-top:0px; 
+    box-shadow: 0px 100px 230px 30px rgba(1,1,1,0.4);
+  }
+  100%{ 
+    opacity:.3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+}
+@-moz-keyframes ghostly {
+  0%  { 
+    opacity: .3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+  50% { 
+    opacity: 1; 
+    margin-top:0px; 
+    box-shadow: 0px 100px 230px 30px rgba(1,1,1,0.4);
+  }
+  100%{ 
+    opacity:.3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+}
+@-o-keyframes ghostly {
+  0%  { 
+    opacity: .3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+  50% { 
+    opacity: 1; 
+    margin-top:0px; 
+    box-shadow: 0px 100px 230px 30px rgba(1,1,1,0.4);
+  }
+  100%{ 
+    opacity:.3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+}
+@keyframes ghostly{
+  0%  { 
+    opacity: .3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+  50% { 
+    opacity: 1; 
+    margin-top:0px; 
+    box-shadow: 0px 100px 230px 30px rgba(1,1,1,0.4);
+  }
+  100%{ 
+    opacity:.3; 
+    margin-top:20px;
+    box-shadow: 0px 90px 130px 30px rgba(1,1,1,0.1);
+  }
+}
+</style>
+</head>
+<body>
+<div id="head">
+  <ul id="eyes"><li id="lefteye"></li><li id="eyespace"></li><li id="righteye"></li></ul>
+  <div id="openMouth"><div id="tongue"></div><div id="teeth"></div></div>
+  <div class="gloss"></div>
+  <ul id="rip">
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+  </ul>
+</div>
+</body>
+</html>
